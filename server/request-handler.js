@@ -1,3 +1,6 @@
+var url = require('url');
+var qs = require('querystring');
+var id = 1;
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -13,11 +16,17 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
+  //'access-control-allow-credentials': true,
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'access-control-allow-headers': 'content-type, accept',
   'access-control-max-age': 10 // Seconds.
 };
-var messagePlus = {results: []};
+var messagePlus = {results: [ {
+  username: 'server',
+  text: 'welcome to the server!',
+  roomname: 'lobby',
+  objectId: '0'
+} ]};
 
 
 var requestHandler = function(request, response) {
@@ -41,25 +50,62 @@ var requestHandler = function(request, response) {
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/json';
+  
+  if (request.method === 'OPTIONS' && request.url === '/classes/messages') {
+    var newCors = {
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET, POST',
+      'access-control-allow-headers': 'content-type, accept'
+    };
+    var statusCode = 204;
+    response.writeHead(statusCode, newCors);
+    response.end();
+    //request.method = 'GET';
+    //console.log('fdkslfjldsfjldksfjdlskjfldsfjkdshfds', request);
+    // console.log(request.method);
+      //console.log('434324', chunk);
+      // if (request.AccessControlAllowMethod === 'POST') {
+      //   request.method = 'POST';
+      //   console.log('__________________________________________________');
+      // } else {
+      //   request.method = 'GET';
+      //   console.log('fjdksfdsf=================================================', request.AccessControlAllowMethod);
+      // }
+      // //chunk !== undefined ? request.method = 'POST' : request.method = 'GET';
+    // console.log(request.method);
+  }
+  
   if (request.url !== '/classes/messages') {
     var statusCode = 404;
     response.writeHead(statusCode, headers);
     response.end();
   } else if (request.method === 'POST') {
     var statusCode = 201;
+    headers['Content-Type'] = 'text/plain';
     response.writeHead(statusCode, headers);
+    var body = '';
     request.on('data', (chunk) => {
-      messagePlus.results.push(JSON.parse(chunk));
+      //console.log('fis this herhehrhehrhrhe?==========================', chunk);
+      body += chunk;
+      // messagePlus.results.push(JSON.parse(chunk));
     });
-    request.on('end', () => { response.end(); });
+    request.on('end', () => { 
+      
+      //body.createdAt = Date.now();
+      var parsedBody = qs.parse(body);
+      parsedBody.objectId = id;
+      id += 1;
+      messagePlus.results.push(parsedBody);
+      response.end('Posted'); 
+    });
   } else if (request.method === 'GET') {
     var statusCode = 200;
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(messagePlus));
   }
   
-  console.log('_______________________________________', JSON.stringify(messagePlus));
-  console.log('=======================================', JSON.parse(JSON.stringify(messagePlus)));
+  //console.log('_______________________________________', JSON.stringify(messagePlus));
+  //console.log('=======================================', JSON.parse(JSON.stringify(messagePlus)));
   // console.log('??????????????????????????????this is response', response);
   // var { method, url, headers } = request;
   // console.log('.....................................', method);

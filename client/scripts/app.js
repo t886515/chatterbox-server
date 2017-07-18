@@ -42,6 +42,7 @@ var app = {
     $.ajax({
       url: app.server,
       type: 'POST',
+      contentType: 'application/json',
       data: message,
       success: function (data) {
         // Clear messages input
@@ -62,6 +63,7 @@ var app = {
       type: 'GET',
       contentType: 'application/json',
       success: function(data) {
+        console.log('This is our data: ', data);
         // Don't bother if we have nothing to work with
         if (!data.results || !data.results.length) { return; }
 
@@ -72,7 +74,7 @@ var app = {
         var mostRecentMessage = data.results[data.results.length - 1];
 
         // Only bother updating the DOM if we have a new message
-        if (mostRecentMessage.objectId !== app.lastMessageId) {
+        
           // Update the UI with the fetched rooms
           app.renderRoomList(data.results);
 
@@ -81,7 +83,7 @@ var app = {
 
           // Store the ID of the most recent message
           app.lastMessageId = mostRecentMessage.objectId;
-        }
+        
       },
       error: function(error) {
         console.error('chatterbox: Failed to fetch messages', error);
@@ -221,6 +223,7 @@ var app = {
 
     // Stop the form from submitting
     event.preventDefault();
+    app.fetch();
   },
 
   startSpinner: function() {

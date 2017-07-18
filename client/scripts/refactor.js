@@ -76,9 +76,10 @@ app = {
   loadMsgs: function() {
     $.ajax({
       url: app.server,
-      data: { order: '-createdAt' },
+      // data: { order: '-createdAt' },
       contentType: 'application/json',
       success: function(json) {
+        console.log(json);
         app.displayMessages(json.results);
       },
       complete: function() {
