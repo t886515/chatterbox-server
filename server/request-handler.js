@@ -22,11 +22,11 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 var messagePlus = {results: [ {
-  username: 'server',
-  text: 'welcome to the server!',
+  username: 'Jono',
+  message: 'Do my bidding!',
   roomname: 'lobby',
   objectId: '0'
-} ]};
+}]};
 
 
 var requestHandler = function(request, response) {
@@ -86,6 +86,9 @@ var requestHandler = function(request, response) {
     var body = '';
     request.on('data', (chunk) => {
       //console.log('fis this herhehrhehrhrhe?==========================', chunk);
+      if (typeof chunk === 'string') {
+        console.log('hey!');
+      }
       body += chunk;
       // messagePlus.results.push(JSON.parse(chunk));
     });
