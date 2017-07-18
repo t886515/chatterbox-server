@@ -11,7 +11,14 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
 var messagePlus = {results: []};
+
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -31,26 +38,28 @@ var requestHandler = function(request, response) {
   //response.results = [];
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
   // The outgoing status.
-  var statusCode = 200;
-
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
-  headers['Content-Type'] = 'text/plain';
-  response.writeHead(statusCode, headers);
-  
-  if (request.method === 'POST') {
-
+  headers['Content-Type'] = 'application/json';
+  if (request.url !== '/classes/messages') {
+    var statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
+  } else if (request.method === 'POST') {
+    var statusCode = 201;
+    response.writeHead(statusCode, headers);
     request.on('data', (chunk) => {
-      if (chunk) {
-        console.log('HE MAY MOVE SLOW, HE CANT JUMP HIGH, BUT THIS KONG"S ONE HELL OF A GUY', chunk);
-        messagePlus.results.push(chunk);
-      }
+      messagePlus.results.push(JSON.parse(chunk));
     });
+    request.on('end', () => { response.end(); });
   } else if (request.method === 'GET') {
-    //response.write(JSON.stringify(messagePlus));    
+    var statusCode = 200;
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify(messagePlus));
   }
-  response.end(JSON.stringify(messagePlus));
   
+  console.log('_______________________________________', JSON.stringify(messagePlus));
+  console.log('=======================================', JSON.parse(JSON.stringify(messagePlus)));
   // console.log('??????????????????????????????this is response', response);
   // var { method, url, headers } = request;
   // console.log('.....................................', method);
@@ -64,7 +73,6 @@ var requestHandler = function(request, response) {
   // request.on('end', () => {
   //   body = Buffer.concat(body);
   // });
-  console.log('+++++++++++++++++++++++++++++++++++++++++++++++++', messagePlus);
   
   // Tell the client we are sending them plain text.
   //
@@ -93,12 +101,6 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
 
 exports.requestHandler = requestHandler;
 
