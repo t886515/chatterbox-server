@@ -9,6 +9,19 @@ describe('server', function() {
     });
   });
 
+  it('Should respond to OPTIONS requests with a 204 status code', function(done) {
+    var requestParams = {method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        message: 'Do my bidding!'}
+    };
+    request(requestParams, function(error, response, body) {
+      expect(response.statusCode).to.equal(204);
+      done();
+    });
+  });
+  
   it('should send back parsable stringified JSON', function(done) {
     request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
       expect(JSON.parse.bind(this, body)).to.not.throw();
@@ -56,7 +69,23 @@ describe('server', function() {
     };
 
     request(requestParams, function(error, response, body) {
-      // Now if we request the log, that message we posted should be there:
+      request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        expect(messages.length).to.not.equal(0);
+        done();
+      });
+    });
+  });
+  
+  it('should respond with messages that were previously posted', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        message: 'Do my bidding!'}
+    };
+
+    request(requestParams, function(error, response, body) {
       request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
         var messages = JSON.parse(body).results;
         expect(messages[0].username).to.equal('Jono');
